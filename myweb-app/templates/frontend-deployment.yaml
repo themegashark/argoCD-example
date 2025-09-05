@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "simple-webapp.fullname" . }}-frontend
+  labels:
+    {{- include "simple-webapp.labels" . | nindent 4 }}
+    app: simple-webapp
+    tier: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "simple-webapp.selectorLabels" . | nindent 6 }}
+      app: simple-webapp
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "simple-webapp.selectorLabels" . | nindent 8 }}
+        app: simple-webapp
+        tier: frontend
+    spec:
+      containers:
+        - name: php-redis
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          env:
+            - name: GET_HOSTS_FROM
+              value: {{ .Values.frontend.env.GET_HOSTS_FROM | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 80

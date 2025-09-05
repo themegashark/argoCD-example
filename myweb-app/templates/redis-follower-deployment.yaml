@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "simple-webapp.fullname" . }}-redis-follower
+  labels:
+    {{- include "simple-webapp.labels" . | nindent 4 }}
+    app: redis
+    role: follower
+    tier: backend
+spec:
+  replicas: {{ .Values.redis.follower.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "simple-webapp.selectorLabels" . | nindent 6 }}
+      app: redis
+      role: follower
+      tier: backend
+  template:
+    metadata:
+      labels:
+        {{- include "simple-webapp.selectorLabels" . | nindent 8 }}
+        app: redis
+        role: follower
+        tier: backend
+    spec:
+      containers:
+        - name: follower
+          image: "{{ .Values.redis.follower.image.repository }}:{{ .Values.redis.follower.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.follower.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 6379

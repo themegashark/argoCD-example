@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "simple-webapp.fullname" . }}-redis-leader
+  labels:
+    {{- include "simple-webapp.labels" . | nindent 4 }}
+    app: redis
+    role: leader
+    tier: backend
+spec:
+  replicas: {{ .Values.redis.leader.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "simple-webapp.selectorLabels" . | nindent 6 }}
+      app: redis
+      role: leader
+      tier: backend
+  template:
+    metadata:
+      labels:
+        {{- include "simple-webapp.selectorLabels" . | nindent 8 }}
+        app: redis
+        role: leader
+        tier: backend
+    spec:
+      containers:
+        - name: leader
+          image: "{{ .Values.redis.leader.image.repository }}:{{ .Values.redis.leader.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.leader.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 6379
